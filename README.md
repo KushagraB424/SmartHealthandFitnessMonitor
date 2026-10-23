@@ -1,206 +1,209 @@
 # Smart Health and Fitness Monitor
 
-**Smart Health and Fitness Monitor** is a native Android application developed in Java for a student mini-project. It uses Android's accelerometer sensor for real-time estimated step counting, tracks active foreground exercise duration, persists daily records using SQLite (`SQLiteOpenHelper`), stores user profiles and step goals in `SharedPreferences`, and sends local goal achievement notifications with runtime permission handling.
+[![Platform](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)](https://developer.android.com/)
+[![Language](https://img.shields.io/badge/Language-Java%2011-ED8B00?logo=openjdk&logoColor=white)](https://www.java.com/)
+[![Database](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![UI](https://img.shields.io/badge/UI-Material%20Design%203-7D5260?logo=materialdesign&logoColor=white)](https://m3.material.io/)
+[![Release](https://img.shields.io/badge/Release-v1.0.0-blue?logo=github)](https://github.com/KushagraB424/SmartHealthandFitnessMonitor/releases/tag/v1.0.0)
+
+A native, battery-conscious Android application built in Java for real-time estimated step counting, active workout duration tracking, and local activity logging. The application operates entirely on-device using the phone's hardware accelerometer, direct SQLite persistence, and modern Android notification channels with zero cloud dependencies.
 
 ---
 
 ## Table of Contents
 
-1. [Features Summary](#features-summary)
-2. [Project Architecture & Tech Stack](#project-architecture--tech-stack)
-3. [How to Open, Sync, and Run the Project](#how-to-open-sync-and-run-the-project)
-4. [Running on a Physical Android Phone (USB Debugging)](#running-on-a-physical-android-phone-usb-debugging)
-5. [Feature Guide](#feature-guide)
-   - [Feature 1: User Profile Management](#feature-1-user-profile-management)
-   - [Feature 2: Physical Activity Monitoring (Accelerometer)](#feature-2-physical-activity-monitoring-accelerometer)
-   - [Feature 3: Daily Activity Records (SQLite)](#feature-3-daily-activity-records-sqlite)
-   - [Feature 4: Activity Goal Settings](#feature-4-activity-goal-settings)
-   - [Feature 5: Activity Notifications](#feature-5-activity-notifications)
-6. [Accelerometer Step-Detection Algorithm & Limitations](#accelerometer-step-detection-algorithm--limitations)
-7. [Activity Lifecycle & Logcat Monitoring](#activity-lifecycle--logcat-monitoring)
-8. [Report Deliverable & PDF Export](#report-deliverable--pdf-export)
+1. [Features](#features)
+2. [Download & Installation](#download--installation)
+3. [App Architecture](#app-architecture)
+4. [Step-Detection Algorithm](#step-detection-algorithm)
+5. [Activity Lifecycle & Battery Efficiency](#activity-lifecycle--battery-efficiency)
+6. [How to Build from Source](#how-to-build-from-source)
+7. [Tech Stack & System Requirements](#tech-stack--system-requirements)
+8. [License & Acknowledgments](#license--acknowledgments)
 
 ---
 
-## Features Summary
+## Features
 
-- **Native Java & XML Layouts:** Clear, beginner-friendly codebase without third-party architecture overhead.
-- **Direct SQLite (`SQLiteOpenHelper`):** One daily record per date storing date, estimated steps, active duration, and goal notification flag.
-- **Fast Local Preferences (`SharedPreferences`):** Persists personal health profile and daily step goals.
-- **Accelerometer-Based Step Detection:** Evaluates 3D magnitude, applies a low-pass gravity filter, detects threshold crossings, and applies time debouncing.
-- **Foreground Tracking & Battery Friendly:** Sensors and timers unregister in `onPause()` to prevent battery drain.
-- **Local Android Notifications:** Alert sent when daily step goal is achieved, avoiding duplicate alerts across steps or app restarts.
+- **Accelerometer Step Counting:** Evaluates 3D Euclidean acceleration vector magnitude, applies an exponential low-pass gravity filter ($\alpha = 0.8$), detects rising-edge threshold crossings ($> 2.5\text{ m/s}^2$), and enforces a $300\text{ ms}$ debounce refractory period to prevent double-counting.
+- **Active Workout Timer:** Accurately measures foreground exercise duration in `HH:MM:SS` format without counting idle background periods.
+- **Local SQLite History:** Automatically logs daily progress (date, steps, active duration, goal status) into an embedded SQLite database (`fitness_monitor.db`). Records are displayed newest first with an automatic empty state.
+- **Dynamic Daily Step Goal:** Customize daily step targets (default: 6,000 steps). Progress updates dynamically with real-time percentage indicators.
+- **Local Achievement Notifications:** Dispatches an interactive celebratory alert when the daily step target is achieved. Compliant with Android 8.0+ `NotificationChannel` and Android 13+ `POST_NOTIFICATIONS` runtime permissions, with anti-spam duplicate prevention.
+- **User Health Profile:** Captures and validates user biometrics (Name, Age, Gender, Height, Weight) against physiological bounds and persists them in `SharedPreferences`.
+- **100% Offline & Private:** Requires zero network permissions (`android.permission.INTERNET` is not requested). All health data remains strictly on your device.
+- **Defensive Hardware Handling:** Gracefully detects missing accelerometer hardware on emulators and disables tracking safely without crashing.
 
 ---
 
-## Project Architecture & Tech Stack
+## Download & Installation
 
-- **Language:** Java 11
-- **UI:** XML Layouts with Material Components (Material 3)
-- **Minimum SDK:** Android 8.0 (API Level 26)
-- **Compile / Target SDK:** Android 14 / 16 (API 34 / 36 compatible)
-- **Local Database:** `SQLiteOpenHelper` (`DatabaseHelper.java`)
-- **Key-Value Storage:** `SharedPreferences`
-- **Sensors:** `SensorManager`, `Sensor.TYPE_ACCELEROMETER`, `SensorEventListener`
-- **Notifications:** `NotificationCompat`, `NotificationChannel`, `POST_NOTIFICATIONS` runtime permission
+The pre-compiled standalone APK is available on GitHub Releases:
 
-### Package Structure (`com.example.smarthealthfitness`)
+📦 **[Download SmartHealthMonitor-v1.0.apk (6.63 MB)](https://github.com/KushagraB424/SmartHealthandFitnessMonitor/releases/download/v1.0.0/SmartHealthMonitor-v1.0.apk)**
+
+### Install via QR Code (Direct to Phone)
+
+Point your Android phone's camera or Google Lens at the QR code below:
+
+<div align="center">
+
+![Download QR Code](https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://github.com/KushagraB424/SmartHealthandFitnessMonitor/releases/download/v1.0.0/SmartHealthMonitor-v1.0.apk)
+
+</div>
+
+### Installation Steps on Android
+1. Download **`SmartHealthMonitor-v1.0.apk`** from the release page or scan the QR code.
+2. When prompted with *"File might be harmful"*, tap **Download anyway** (standard Android prompt for apps installed outside Google Play).
+3. Open the downloaded file and tap **Install** (if prompted, toggle **Allow from this source** in Settings).
+4. Launch **Smart Health & Fitness Monitor**, grant the notification permission, and tap **Start Tracking**!
+
+---
+
+## App Architecture
+
+The project follows the **Model-View-Controller (MVC)** design pattern:
 
 ```text
-com.example.smarthealthfitness/
-├── MainActivity.java         # Main dashboard, sensor tracking, timer, goal settings
-├── ProfileActivity.java      # User profile input, validation, SharedPreferences
-├── HistoryActivity.java      # SQLite records viewer with ListView & empty state
-├── DatabaseHelper.java       # SQLiteOpenHelper for daily_activity table
-├── DailyRecord.java          # Activity record data model
-└── HistoryAdapter.java       # Custom ArrayAdapter for history ListView items
++-------------------------------------------------------------------------------+
+|                             APPLICATION ARCHITECTURE                          |
++-------------------------------------------------------------------------------+
+|                                                                               |
+|  PRESENTATION (VIEW)         CONTROLLERS                   DATA LAYER (MODEL) |
+|  [activity_main.xml]      <-> [MainActivity]           <-> [SensorManager]    |
+|                                     │                  <-> [SharedPreferences]|
+|                                     ▼ (Explicit Intent)                       |
+|  [activity_profile.xml]   <-> [ProfileActivity]        <-> [SharedPreferences]|
+|                                     │                                         |
+|                                     ▼ (Explicit Intent)                       |
+|  [activity_history.xml]   <-> [HistoryActivity]        <-> [DatabaseHelper]   |
+|         │                           │                               │         |
+|  [item_history_record]    <-> [HistoryAdapter]         <-> [fitness_monitor.db|
+|                                                              (daily_activity)]|
++-------------------------------------------------------------------------------+
 ```
 
----
+### Core Components (`com.example.smarthealthfitness`)
 
-## How to Open, Sync, and Run the Project
-
-1. **Launch Android Studio:**
-   - Open Android Studio (Ladybug, Koala, Jellyfish, or newer).
-2. **Open the Project:**
-   - Click **File > Open...**
-   - Navigate to `C:\Users\<YourUser>\AndroidStudioProjects\SmartHealthandFitnessMonitor` and click **OK**.
-3. **Gradle Sync:**
-   - Android Studio will automatically detect the Gradle files and initiate a sync.
-   - If prompted, click **Sync Project with Gradle Files** (elephant icon in top toolbar).
-4. **Build APK via Terminal (Optional):**
-   ```powershell
-   .\gradlew.bat assembleDebug
-   ```
-   The built APK will be located at:
-   `app\build\outputs\apk\debug\app-debug.apk`
+- **`MainActivity.java`**: Primary dashboard controller. Manages accelerometer listener events, foreground timer loop, goal settings, notification dispatch, and lifecycle telemetry.
+- **`ProfileActivity.java`**: Form controller for capturing and validating user biometrics with inline error feedback (`setError()`), saved to `SharedPreferences`.
+- **`HistoryActivity.java`**: History viewer querying the SQLite database descending by date and rendering records into a `ListView`.
+- **`DatabaseHelper.java`**: SQLite helper managing table `daily_activity` with idempotent atomic upsert queries (`insertOrUpdateDailyRecord`).
+- **`DailyRecord.java`**: POJO entity model encapsulating date, step count, active duration, and goal notification status.
+- **`HistoryAdapter.java`**: Custom `ArrayAdapter` binding daily records to Material cards with duration formatting.
 
 ---
 
-## Running on a Physical Android Phone (USB Debugging)
+## Step-Detection Algorithm
 
-To test the physical accelerometer sensor and notifications on a real phone:
+Human walking generates rhythmic acceleration spikes superimposed on Earth's static gravity ($~9.81\text{ m/s}^2$). The app translates raw sensor streams into steps via a five-stage digital signal conditioning pipeline:
 
-1. **Enable Developer Options:**
-   - On your Android phone, go to **Settings > About Phone**.
-   - Tap **Build Number** 7 times until you see the toast message *"You are now a developer!"*.
-2. **Enable USB Debugging:**
-   - Go to **Settings > System > Developer Options** (or search "Developer Options" in Settings).
-   - Toggle **USB Debugging** to **ON**.
-3. **Connect Device to PC:**
-   - Connect the phone via a USB data cable.
-   - On the phone, a prompt *"Allow USB debugging?"* will appear. Check *"Always allow from this computer"* and tap **Allow**.
-4. **Run from Android Studio:**
-   - In Android Studio's top toolbar, ensure your connected device name appears in the device selector.
-   - Click the green **Run ('app')** button (Shift + F10).
-   - The application will compile, install, and launch on your phone.
+```text
+  [ Raw Accelerometer ] ──> (ax, ay, az)
+           │
+           ▼
+  [ 1. Vector Magnitude ] ──> m = √(ax² + ay² + az²)  (Orientation-Invariant)
+           │
+           ▼
+  [ 2. Gravity Filter ]  ──> g = α·g + (1-α)·m        (α = 0.8 Low-Pass Baseline)
+           │
+           ▼
+  [ 3. Linear Deviation ]──> Δa = m - g               (Dynamic Kinetic Force)
+           │
+           ▼
+  [ 4. Threshold Test ]  ──> Is Δa > 2.5 m/s² ?       (Rising-Edge Crossing)
+           │
+           ▼
+  [ 5. Debounce Window ] ──> Is Δt ≥ 300 ms ?         (Reject Vibrations & Double-Counting)
+           │
+           ▼
+    [ STEP COUNTED! ] ──> todaySteps++ & Update UI
+```
 
----
-
-## Feature Guide
-
-### Feature 1: User Profile Management
-- Open via the **"User Profile"** button on MainActivity.
-- Form fields:
-  - **Full Name:** Required, at least 2 characters.
-  - **Age:** Positive integer between 1 and 120.
-  - **Gender:** Dropdown selection (Male, Female, Other, Prefer not to say).
-  - **Height:** Decimal allowed (50.0 cm to 250.0 cm).
-  - **Weight:** Decimal allowed (20.0 kg to 300.0 kg).
-- Values are validated on clicking **Save Profile**. Invalid inputs show friendly field errors (`setError`) or Toast warnings without crashing.
-- Saved profile reloads automatically every time the profile screen opens.
-
-### Feature 2: Physical Activity Monitoring (Accelerometer)
-- Tap **"Start Tracking"** to begin active monitoring.
-- Tap **"Pause Tracking"** to stop monitoring and duration counting.
-- Displays:
-  - Current day's estimated step count.
-  - Active duration spent tracking while the main screen is in the foreground.
-- **Sensor Availability Check:** If tested on an emulator or device without an accelerometer, the app displays a clear warning banner and disables tracking safely.
-- **Disclaimer:** Prominently displays: *“Step counts are estimates and are not medical measurements.”*
-
-### Feature 3: Daily Activity Records (SQLite)
-- Today's record is updated automatically in SQLite (`fitness_monitor.db`).
-- Records are saved on pausing, periodically during active tracking, and when leaving the foreground (`onPause`).
-- Tap **"Activity History"** to open `HistoryActivity`.
-- Records are displayed newest first.
-- If no records exist yet, it displays: *"No activity records yet"*.
-- When the calendar date rolls over midnight, the app archives previous totals and starts fresh for the new day.
-
-### Feature 4: Activity Goal Settings
-- Input numeric daily step target into the **Daily Step Goal** field (default: 6,000 steps).
-- Tap **"Save Goal"**. Validates positive integer (> 0).
-- Goal is saved into `SharedPreferences` and restored upon restarting.
-- Main screen shows progress: e.g., `Goal: 6,000 steps (45%)`.
-
-### Feature 5: Activity Notifications
-- When today's steps reach or exceed the daily goal, a local notification is dispatched:
-  - **Title:** `Daily Goal Achieved!`
-  - **Message:** `Congratulations! You achieved your daily step goal. Keep moving!`
-  - **Channel:** `fitness_goal_channel` (High importance, vibration enabled).
-  - **Icon:** Custom clean fitness running icon (`ic_notification_fitness`).
-  - **Tap Action:** Launches `MainActivity`.
-- **Duplicate Prevention:** Sets `goal_notified = 1` in SQLite. Prevents duplicate alerts for subsequent steps or app restarts.
-- **Android 13+ Support:** Requests `android.permission.POST_NOTIFICATIONS` at runtime. Denying permission suppresses notifications gracefully without errors.
-
----
-
-## Accelerometer Step-Detection Algorithm & Limitations
-
-### Mathematical Algorithm
-1. **3D Magnitude Calculation:**
-   $$\text{Magnitude} = \sqrt{x^2 + y^2 + z^2}$$
-   Taking the Euclidean norm makes acceleration measurement invariant to phone orientation in a pocket or hand.
-2. **Low-Pass Gravity Filter:**
-   $$g_{\text{smoothed}} = \alpha \cdot g_{\text{smoothed}} + (1 - \alpha) \cdot \text{Magnitude} \quad (\alpha = 0.8)$$
-   This maintains a dynamic baseline of static gravity (~9.81 $m/s^2$).
+1. **3D Euclidean Vector Magnitude:**
+   $$m = \sqrt{a_x^2 + a_y^2 + a_z^2}$$
+   Taking the Euclidean norm makes acceleration measurement invariant to phone tilt or orientation (pocket, hand, or bag).
+2. **Low-Pass Gravity Isolation Filter:**
+   $$g_t = \alpha \cdot g_{t-1} + (1 - \alpha) \cdot m_t \quad (\alpha = 0.8)$$
+   Maintains a dynamic baseline of static gravitational acceleration.
 3. **Dynamic Acceleration Deviation:**
-   $$\Delta a = \text{Magnitude} - g_{\text{smoothed}}$$
-4. **Threshold Crossing:**
-   A step trigger is primed when $\Delta a > 2.5 \text{ m/s}^2$ on a rising edge.
-5. **Debouncing (Minimum Step Interval):**
+   $$\Delta a_t = m_t - g_t$$
+   Extracts net kinetic force from the footstrike.
+4. **Rising-Edge Threshold Crossing:**
+   Primed when $\Delta a_t > 2.5\text{ m/s}^2$, rejecting subtle tremors and vehicle vibrations.
+5. **Debounce Refractory Window:**
    $$\Delta t = t_{\text{current}} - t_{\text{last\_step}} \ge 300\text{ ms}$$
-   Filters out high-frequency vibrations, hand shakes, or multiple axis oscillations within a single foot strike.
-
-### Real-World Limitations
-- **False Positives:** Gentle vehicle movement, riding a bus over bumps, shaking the device, or tapping can trigger false steps.
-- **No Stride Length Calibration:** Steps are raw counts without GPS distance or user height stride calculation.
-- **Foreground Only:** Tracking pauses when leaving the app to conserve device battery and avoid background service complexity.
+   Filters out resonance recoil and caps maximum cadence at $3.33\text{ steps/sec}$ ($200\text{ steps/min}$).
 
 ---
 
-## Activity Lifecycle & Logcat Monitoring
+## Activity Lifecycle & Battery Efficiency
 
-The application demonstrates Android Activity lifecycle states:
-- **Active:** `onResume()` – Activity interactive; accelerometer listener registered; duration timer running.
-- **Paused:** `onPause()` – Activity losing focus; accelerometer unregistered; timer stopped; SQLite record saved.
-- **Stopped:** `onStop()` – Activity hidden.
-- **Destroyed:** `onDestroy()` – Activity destroyed.
+To conserve device battery, sensor listeners and background threads are strictly bound to Android Activity lifecycle states:
 
-### How to View Lifecycle Messages in Logcat
+```text
+  [ Activity Resumed ] ──> onResume()  ──> Register Accelerometer & Start Timer
+                                 │
+  [ User Minimizes App ] ─> onPause()   ──> Unregister Accelerometer & Stop Timer
+                                 │      ──> Auto-Save Progress to SQLite
+                                 ▼
+  [ Activity Hidden ]  ──> onStop()    ──> Release Non-Critical Resources
+```
 
-1. Connect your device or emulator.
-2. Open the **Logcat** tab at the bottom of Android Studio.
-3. In the search/filter box, enter:
-   ```text
-   tag:FitnessLifecycle
+- **`onResume()`**: Registers `SensorEventListener` (`SENSOR_DELAY_UI`) and resumes the timer runnable only when the screen is interactive and tracking is active.
+- **`onPause()`**: Immediately unregisters the sensor listener, halts the timer runnable, and commits in-memory totals to SQLite. Zero background battery consumption.
+- **`onSaveInstanceState()`**: Preserves volatile workout totals across device orientation changes.
+- **Logcat Telemetry**: All lifecycle transitions are logged under tag `FitnessLifecycle`. Filter by `tag:FitnessLifecycle` in Android Studio Logcat to monitor state transitions in real time.
+
+---
+
+## How to Build from Source
+
+### Prerequisites
+- **Android Studio:** Ladybug (2024.2) or newer
+- **JDK:** Java 11 or higher
+- **Android SDK:** Platform API Level 34 or 36
+
+### Build via Android Studio
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/KushagraB424/SmartHealthandFitnessMonitor.git
    ```
-4. Perform actions on your phone to observe the logged transitions:
-   - Rotate the phone (triggers `onPause -> onStop -> onDestroy -> onCreate -> onStart -> onResume`).
-   - Switch apps (triggers `onPause -> onStop`).
-   - Reopen app (triggers `onStart -> onResume`).
-   - Start / pause tracking (logs tracking start, stop, and database save events).
+2. Open the project folder in Android Studio.
+3. Wait for Gradle to finish syncing dependencies.
+4. Click **Run ('app')** (Shift + F10) to deploy to your connected device or emulator.
+
+### Build APK via Command Line
+```powershell
+# Windows
+.\gradlew.bat assembleDebug
+
+# macOS / Linux
+./gradlew assembleDebug
+```
+The compiled debug APK will be generated at:
+`app/build/outputs/apk/debug/app-debug.apk`
 
 ---
 
-## Report Deliverable & PDF Export
+## Tech Stack & System Requirements
 
-- **Editable Report Draft:** [`PROJECT_REPORT_DRAFT.md`](PROJECT_REPORT_DRAFT.md)
-- **Print-Ready HTML Version:** [`PROJECT_REPORT_DRAFT.html`](PROJECT_REPORT_DRAFT.html)
-- **Pre-generated PDF Report:** [`PROJECT_REPORT_DRAFT.pdf`](PROJECT_REPORT_DRAFT.pdf)
+| Category | Specification |
+| :--- | :--- |
+| **Language** | Java 11 |
+| **UI Framework** | XML Layouts with Material Design 3 |
+| **Minimum SDK** | Android 8.0 (API Level 26, Oreo) |
+| **Target / Compile SDK** | Android 14 / 16 (API Level 34 / 36) |
+| **Sensors** | `Sensor.TYPE_ACCELEROMETER` via `SensorManager` |
+| **Persistence** | SQLite (`SQLiteOpenHelper`) & `SharedPreferences` |
+| **Notifications** | `NotificationCompat` with high-importance channel |
+| **Network Permission** | None (100% Offline) |
 
-### How to Regenerate or Update the PDF:
-1. Open [`PROJECT_REPORT_DRAFT.html`](PROJECT_REPORT_DRAFT.html) in Microsoft Edge or Google Chrome.
-2. Press **Ctrl + P** (Print).
-3. Select Destination: **Save as PDF**.
-4. Check **Background graphics** and click **Save**.
+---
+
+## License & Acknowledgments
+
+This project is open-source and available under the standard open educational project guidelines.
+
+- Built using the native **Android SDK** and **AndroidX / Material Components**.
+- Special thanks to the Android open-source community and Google Developer documentation for sensors, SQLite, and modern notification channel references.
