@@ -1,0 +1,71 @@
+<resources>
+    <string name="app_name">Smart Health and Fitness Monitor</string>
+
+    <!-- Main Activity -->
+    <string name="title_daily_activity">Today\'s Activity</string>
+    <string name="label_step_count">Estimated Steps</string>
+    <string name="label_duration">Active Duration</string>
+    <string name="initial_step_count">0</string>
+    <string name="initial_duration">00:00:00</string>
+    <string name="btn_start_tracking">Start Tracking</string>
+    <string name="btn_pause_tracking">Pause Tracking</string>
+    <string name="status_tracking_active">Tracking Active</string>
+    <string name="status_tracking_paused">Tracking Paused</string>
+    <string name="status_sensor_missing">Accelerometer sensor not detected on this device.</string>
+
+    <!-- Goal Section -->
+    <string name="title_goal_settings">Daily Step Goal</string>
+    <string name="hint_daily_goal">Enter goal (e.g., 6000)</string>
+    <string name="btn_save_goal">Save Goal</string>
+    <string name="label_current_goal">Goal: %1$d steps</string>
+    <string name="goal_saved_success">Daily step goal saved!</string>
+    <string name="error_invalid_goal">Please enter a valid positive step count greater than 0.</string>
+
+    <!-- Navigation -->
+    <string name="btn_profile">User Profile</string>
+    <string name="btn_history">Activity History</string>
+
+    <!-- Disclaimer -->
+    <string name="medical_disclaimer">Step counts are estimates and are not medical measurements.</string>
+
+    <!-- Profile Activity -->
+    <string name="title_profile">User Profile</string>
+    <string name="label_name">Full Name</string>
+    <string name="hint_name">e.g., Alex Johnson</string>
+    <string name="label_age">Age (years)</string>
+    <string name="hint_age">e.g., 22</string>
+    <string name="label_gender">Gender</string>
+    <string name="label_height">Height (cm)</string>
+    <string name="hint_height">e.g., 175.5</string>
+    <string name="label_weight">Weight (kg)</string>
+    <string name="hint_weight">e.g., 68.0</string>
+    <string name="btn_save_profile">Save Profile</string>
+    <string name="profile_saved_success">Profile saved successfully!</string>
+
+    <!-- Profile Validation Errors -->
+    <string name="error_empty_name">Please enter your name.</string>
+    <string name="error_invalid_name">Name must be at least 2 characters.</string>
+    <string name="error_empty_age">Please enter your age.</string>
+    <string name="error_invalid_age">Age must be between 1 and 120.</string>
+    <string name="error_empty_gender">Please select your gender.</string>
+    <string name="error_empty_height">Please enter your height in cm.</string>
+    <string name="error_invalid_height">Height must be between 50 and 250 cm.</string>
+    <string name="error_empty_weight">Please enter your weight in kg.</string>
+    <string name="error_invalid_weight">Weight must be between 20 and 300 kg.</string>
+
+    <!-- History Activity -->
+    <string name="title_history">Activity History</string>
+    <string name="no_history_records">No activity records yet</string>
+    <string name="history_date_prefix">Date: %1$s</string>
+    <string name="history_steps_prefix">Steps: %1$d</string>
+    <string name="history_duration_prefix">Duration: %1$s</string>
+    <string name="history_goal_achieved">Goal Achieved: Yes</string>
+    <string name="history_goal_not_achieved">Goal Achieved: No</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Fitness Goal Notifications</string>
+    <string name="notification_channel_desc">Alerts when daily step goal is reached</string>
+    <string name="notification_title">Daily Goal Achieved!</string>
+    <string name="notification_message">Congratulations! You achieved your daily step goal. Keep moving!</string>
+    <string name="permission_denied_notification">Notification permission denied. Goal notifications will not appear in the status bar.</string>
+</resources>

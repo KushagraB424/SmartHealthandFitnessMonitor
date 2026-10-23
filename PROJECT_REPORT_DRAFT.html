@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Health and Fitness Monitor - Project Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm 18mm 20mm 18mm;
+            @bottom-right {
+                content: counter(page);
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #1a1a1a;
+            line-height: 1.5;
+            font-size: 11pt;
+            background: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2, h3, h4 {
+            color: #004d33;
+            font-weight: 700;
+            margin-top: 1.4em;
+            margin-bottom: 0.5em;
+        }
+        h1 {
+            font-size: 22pt;
+            text-align: center;
+            border-bottom: 2px solid #006C4C;
+            padding-bottom: 12px;
+            margin-top: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 13pt;
+            color: #4C6358;
+            margin-bottom: 25px;
+        }
+        .meta-box {
+            background-color: #f4f8f5;
+            border: 1px solid #d0e4d8;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-bottom: 25px;
+            font-size: 10pt;
+        }
+        .meta-box p {
+            margin: 4px 0;
+        }
+        h2 {
+            font-size: 15pt;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5px;
+            page-break-after: avoid;
+        }
+        h3 {
+            font-size: 12pt;
+            page-break-after: avoid;
+        }
+        p, li {
+            text-align: justify;
+        }
+        ul, ol {
+            padding-left: 22px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 9.5pt;
+            page-break-inside: avoid;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 7px 9px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #e8f5ee;
+            color: #004d33;
+            font-weight: 600;
+        }
+        tr:nth-child(even) td {
+            background-color: #fafcfb;
+        }
+        code, pre {
+            font-family: "Consolas", "Courier New", monospace;
+        }
+        pre {
+            background-color: #f7f9f8;
+            border: 1px solid #e1e7e4;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 9pt;
+            overflow-x: auto;
+            page-break-inside: avoid;
+        }
+        code {
+            background-color: #f0f4f2;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 9.5pt;
+        }
+        .placeholder-box {
+            border: 2px dashed #89a997;
+            background-color: #f9fbf9;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            margin: 15px 0;
+            color: #4C6358;
+            font-weight: 600;
+            page-break-inside: avoid;
+        }
+        .status-passed {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .status-pending {
+            color: #d84315;
+            font-weight: bold;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+        .footer {
+            margin-top: 40px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+            font-size: 8.5pt;
+            color: #777;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Smart Health and Fitness Monitor</h1>
+    <div class="subtitle">Mobile Application Development Mini-Project Report</div>
+
+    <div class="meta-box">
+        <p><strong>Course / Module:</strong> Mobile Application Development (Native Android)</p>
+        <p><strong>Language & Architecture:</strong> Java 11, XML Layouts, Material Design 3</p>
+        <p><strong>Persistence:</strong> SQLite (<code>SQLiteOpenHelper</code>) &amp; <code>SharedPreferences</code></p>
+        <p><strong>Sensors:</strong> Hardware Accelerometer (<code>Sensor.TYPE_ACCELEROMETER</code>)</p>
+        <p><strong>Document Status:</strong> Editable Submission Draft with Live Gradle Build Verification</p>
+    </div>
+
+    <h2>1. Introduction and Objectives</h2>
+    <p>Physical inactivity is one of the leading risk factors for modern non-communicable diseases. While commercial fitness bands and smartwatches are popular, they frequently depend on external cloud servers, continuous GPS tracking, and proprietary closed-source algorithms.</p>
+    <p>The <strong>Smart Health and Fitness Monitor</strong> is a self-contained, native Android application created as a student mini-project. It operates strictly on-device without cloud services, third-party chart libraries, Room ORM, or background daemon services. It adheres to fundamental native Android engineering practices using Java, XML layouts, SQLite, and the hardware accelerometer.</p>
+
+    <h3>1.1 Core Objectives</h3>
+    <ul>
+        <li><strong>Physical Activity Monitoring:</strong> Estimate footstep counts from raw 3D accelerometer signals ($x, y, z$) via vector magnitude, low-pass gravity filtering, threshold crossing, and time debouncing.</li>
+        <li><strong>Active Duration Tracking:</strong> Track active foreground exercise time without counting idle background periods.</li>
+        <li><strong>User Profile Management:</strong> Provide input and range validation for user attributes (Name, Age, Gender, Height, Weight), persisted locally in <code>SharedPreferences</code>.</li>
+        <li><strong>Activity Goal Setting:</strong> Enable customizable daily step goals stored in <code>SharedPreferences</code> with real-time percentage indicators.</li>
+        <li><strong>Activity Notifications:</strong> Trigger a local Android notification upon goal achievement with Android 13+ runtime permission handling and duplicate alert prevention.</li>
+        <li><strong>Daily Activity Records:</strong> Maintain persistent daily records (date, steps, duration, goal flag) in an SQLite database using <code>SQLiteOpenHelper</code>.</li>
+        <li><strong>Android Lifecycle Mastery:</strong> Handle and explain Activity lifecycle states (Active, Paused, Stopped, Destroyed) with Logcat telemetry under tag <code>FitnessLifecycle</code>.</li>
+    </ul>
+
+    <h2>2. Application Design & Architecture</h2>
+    <p>The application employs a modular three-activity architecture communicating via standard Android Intents and local storage providers:</p>
+    <ul>
+        <li><strong>MainActivity:</strong> Primary user interface containing the step counter, active timer, tracking toggle button, daily goal configuration, and navigation controls.</li>
+        <li><strong>ProfileActivity:</strong> Dedicated biometric profile form with range and type validation, persisted to <code>SharedPreferences</code>.</li>
+        <li><strong>HistoryActivity:</strong> Displays past daily records retrieved from SQLite via a <code>ListView</code> with an automatic empty state.</li>
+        <li><strong>DatabaseHelper:</strong> Encapsulates all SQLite database operations (table creation, upsert queries, and sorting).</li>
+        <li><strong>DailyRecord:</strong> Plain Old Java Object (POJO) representing daily fitness statistics.</li>
+        <li><strong>HistoryAdapter:</strong> Custom <code>ArrayAdapter</code> rendering activity cards in the history list.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h2>3. Complete Source Code Overview</h2>
+    <p>The source code has been structured cleanly into the project directory under package <code>com.example.smarthealthfitness</code>:</p>
+    <table style="width: 100%;">
+        <thead>
+            <tr>
+                <th style="width: 35%;">File Name</th>
+                <th style="width: 25%;">Component</th>
+                <th style="width: 40%;">Primary Responsibility</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>MainActivity.java</code></td>
+                <td>Activity / SensorListener</td>
+                <td>Accelerometer processing, duration timer, goal setting, local notifications, lifecycle logging.</td>
+            </tr>
+            <tr>
+                <td><code>ProfileActivity.java</code></td>
+                <td>Activity</td>
+                <td>User profile form validation, SharedPreferences storage and reload.</td>
+            </tr>
+            <tr>
+                <td><code>HistoryActivity.java</code></td>
+                <td>Activity</td>
+                <td>Queries SQLite records ordered newest first and renders in ListView.</td>
+            </tr>
+            <tr>
+                <td><code>DatabaseHelper.java</code></td>
+                <td>SQLiteOpenHelper</td>
+                <td>Manages SQLite database <code>fitness_monitor.db</code> and table <code>daily_activity</code>.</td>
+            </tr>
+            <tr>
+                <td><code>DailyRecord.java</code></td>
+                <td>Model (POJO)</td>
+                <td>Encapsulates date, steps, duration, and goal notification flag.</td>
+            </tr>
+            <tr>
+                <td><code>HistoryAdapter.java</code></td>
+                <td>ArrayAdapter</td>
+                <td>Binds <code>DailyRecord</code> items to custom list layout rows.</td>
+            </tr>
+            <tr>
+                <td><code>AndroidManifest.xml</code></td>
+                <td>Manifest</td>
+                <td>Declares activities, permissions (<code>POST_NOTIFICATIONS</code>), and accelerometer feature.</td>
+            </tr>
+            <tr>
+                <td><code>activity_main.xml</code></td>
+                <td>XML Layout</td>
+                <td>ScrollView layout for step counter, timer, toggle button, goal input, and disclaimers.</td>
+            </tr>
+            <tr>
+                <td><code>activity_profile.xml</code></td>
+                <td>XML Layout</td>
+                <td>Form layout for Name, Age, Gender Spinner, Height, Weight, and Save button.</td>
+            </tr>
+            <tr>
+                <td><code>activity_history.xml</code></td>
+                <td>XML Layout</td>
+                <td>ListView container with empty view placeholder and back navigation.</td>
+            </tr>
+            <tr>
+                <td><code>item_history_record.xml</code></td>
+                <td>XML Layout</td>
+                <td>Card layout for individual daily activity records.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. Application Screenshots</h2>
+    <p><em>Notice: To preserve scientific and academic integrity, placeholders are provided below for pasting real screenshots from an Android phone or emulator:</em></p>
+
+    <div class="placeholder-box">
+        [ PLACEHOLDER: FIGURE 4.1 - MainActivity Dashboard with Active Tracking ]<br>
+        <span style="font-size: 9pt; font-weight: normal; color: #666;">Demonstrates step counter, live duration timer (HH:mm:ss), and Pause Tracking button.</span>
+    </div>
+
+    <div class="placeholder-box">
+        [ PLACEHOLDER: FIGURE 4.2 - User Profile Form &amp; Validation ]<br>
+        <span style="font-size: 9pt; font-weight: normal; color: #666;">Demonstrates Name, Age, Gender, Height, Weight fields and validation error popups.</span>
+    </div>
+
+    <div class="placeholder-box">
+        [ PLACEHOLDER: FIGURE 4.3 - System Goal-Achievement Notification ]<br>
+        <span style="font-size: 9pt; font-weight: normal; color: #666;">Demonstrates Android status bar notification: "Congratulations! You achieved your daily step goal."</span>
+    </div>
+
+    <div class="placeholder-box">
+        [ PLACEHOLDER: FIGURE 4.4 - Activity History Screen (SQLite) ]<br>
+        <span style="font-size: 9pt; font-weight: normal; color: #666;">Demonstrates ListView showing past daily records sorted newest first with Goal Achieved badges.</span>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>5. Implementation Explanation</h2>
+
+    <h3>5.1 Accelerometer Step-Detection Algorithm</h3>
+    <p>The step detection algorithm is implemented in <code>MainActivity.java</code> using Android's <code>Sensor.TYPE_ACCELEROMETER</code>. The algorithm follows four systematic stages:</p>
+    <ol>
+        <li><strong>Euclidean Vector Magnitude:</strong> Raw acceleration values ($x, y, z$) are combined into an omnidirectional magnitude:
+            <br><code>magnitude = Math.sqrt(x * x + y * y + z * z);</code>
+            <br>This ensures that footsteps are counted regardless of device tilt or pocket orientation.
+        </li>
+        <li><strong>Low-Pass Gravity Filter:</strong> Static gravity ($\approx 9.81\text{ m/s}^2$) is isolated using an exponential moving average:
+            <br><code>smoothedGravity = (0.8f * smoothedGravity) + (0.2f * magnitude);</code>
+        </li>
+        <li><strong>Dynamic Acceleration Deviation:</strong> The dynamic footstrike component is computed by subtracting baseline gravity:
+            <br><code>dynamicAcceleration = magnitude - smoothedGravity;</code>
+        </li>
+        <li><strong>Threshold Crossing and Time Debouncing:</strong> A footstep is logged when dynamic acceleration crosses above $2.5\text{ m/s}^2$ and at least $300\text{ ms}$ have elapsed since the prior step. This debouncing filters out hand tremors and rapid vibration artifacts.</li>
+    </ol>
+    <p><strong>Limitations:</strong> The algorithm cannot distinguish between walking and bumpy vehicular motion (e.g., bus or car rides). No GPS stride calibration is performed. The application explicitly displays: <em>“Step counts are estimates and are not medical measurements.”</em></p>
+
+    <h3>5.2 Activity Lifecycle Architecture</h3>
+    <p>The application strictly separates tracking states from Android lifecycle callbacks:</p>
+    <ul>
+        <li><code>onResume()</code>: When the activity enters the foreground, the accelerometer listener is registered (if tracking is active) and the duration timer is started.</li>
+        <li><code>onPause()</code>: When the activity leaves the foreground, the accelerometer is unregistered to eliminate battery drain, the timer stops, and today's stats are committed to SQLite.</li>
+        <li><code>onSaveInstanceState()</code>: Step totals, active duration, and tracking state are saved into the Bundle, ensuring seamless state recovery across device rotation.</li>
+        <li><code>onDestroy()</code>: Cleanup routines run. Crucially, persistence does not depend on <code>onDestroy()</code> because Android may kill processes directly under memory pressure.</li>
+    </ul>
+
+    <h2>6. Testing and Results</h2>
+    <p>Software compilation was verified locally using the Gradle build system. Real-device tests are marked pending physical device execution.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">ID</th>
+                <th style="width: 25%;">Test Scenario</th>
+                <th style="width: 30%;">Expected Result</th>
+                <th style="width: 20%;">Actual Result</th>
+                <th style="width: 15%;">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>TC-01</strong></td>
+                <td>Gradle Debug Build</td>
+                <td>Compilation and APK packaging complete with exit code 0.</td>
+                <td>BUILD SUCCESSFUL in 1m 3s</td>
+                <td><span class="status-passed">PASSED</span></td>
+            </tr>
+            <tr>
+                <td><strong>TC-02</strong></td>
+                <td>Profile Valid Input</td>
+                <td>Form accepts valid data and saves to SharedPreferences.</td>
+                <td>Not tested</td>
+                <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+                <td><strong>TC-03</strong></td>
+                <td>Profile Range Validation</td>
+                <td>Rejects invalid age (&lt;1 or &gt;120) and non-numeric height/weight.</td>
+                <td>Not tested</td>
+                <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+                <td><strong>TC-04</strong></td>
+                <td>Step Counter Accuracy</td>
+                <td>Increments estimated steps during walking.</td>
+                <td>Not tested</td>
+                <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+                <td><strong>TC-05</strong></td>
+                <td>Start / Pause Toggle</td>
+                <td>Tracking and duration timer pause when user taps Pause button.</td>
+                <td>Not tested</td>
+                <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+                <td><strong>TC-06</strong></td>
+                <td>Missing Accelerometer</td>
+                <td>Displays error banner and disables button without crash.</td>
+                <td>Not tested</td>
+                <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+                <td><strong>TC-07</strong></td>
+                <td>Goal Persistence</td>
+                <td>Custom goal is remembered after app restart.</td>
+                <td>Not tested</td>
+                <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+                <td><strong>TC-08</strong></td>
+                <td>Goal Notification Alert</td>
+                <td>Notification posted when steps $\ge$ goal; no duplicate alerts.</td>
+                <td>Not tested</td>
+                <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+                <td><strong>TC-09</strong></td>
+                <td>SQLite History Storage</td>
+                <td>Today's record stored and viewable in HistoryActivity newest first.</td>
+                <td>Not tested</td>
+                <td><span class="status-pending">Pending</span></td>
+            </tr>
+            <tr>
+                <td><strong>TC-10</strong></td>
+                <td>Screen Rotation Handling</td>
+                <td>Totals and tracking state preserved across configuration changes.</td>
+                <td>Not tested</td>
+                <td><span class="status-pending">Pending</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>7. Conclusion &amp; Future Scope</h2>
+    <p>The <strong>Smart Health and Fitness Monitor</strong> demonstrates how fundamental Android components can be combined to build an effective, battery-conscious mobile health tool. By leveraging direct SQLite access and sensor filtering without bloated frameworks, the project serves as an ideal reference implementation for student coursework.</p>
+    <p><strong>Future Scope:</strong> Potential enhancements include integrating stride length calculations based on user height, providing weekly activity bar summaries, and adding CSV log export capabilities.</p>
+
+    <h2>8. References &amp; Acknowledgments</h2>
+    <ol>
+        <li>Android Developers: <em>Sensors Overview &amp; Accelerometer API</em>, Google Documentation.</li>
+        <li>Android Developers: <em>Data Storage - SQLiteOpenHelper &amp; SharedPreferences</em>.</li>
+        <li>Android Developers: <em>Activity Lifecycle &amp; NotificationCompat Guide</em>.</li>
+        <li>AI Assistance Disclosure: Initial architectural structure and documentation draft were generated with assistance from Google Antigravity AI assistant.</li>
+    </ol>
+
+    <div class="footer">
+        Smart Health and Fitness Monitor &bull; Mini-Project Report Draft &bull; Generated for Academic Submission
+    </div>
+
+</body>
+</html>
